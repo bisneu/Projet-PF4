@@ -1,8 +1,4 @@
-type formule = Vrai | Faux
-              | Var of string
-              | Neg of formule
-              | Et of formule * formule 
-              | Ou of formule * formule;;
+open Types;;
 
 let rec descente_neg f = match f with 
         | Neg(g) -> begin match g with 
