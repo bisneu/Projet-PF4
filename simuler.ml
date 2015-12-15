@@ -1,35 +1,3 @@
-type state = A | D ;;
-type generation = state array array;;
-type rule = (state*state*state*state*state);;
-type automate = rule list ;;
-
-
-(* Fonction aui affiche une generation donnee en argument *)
-let show_generation (gen:generation) = 
-	for i=0 to ((Array.length gen)-1) do 
-		for j=0 to ((Array.length gen)-1) do
-			match (gen.(i).(j))with
-				| A -> print_string "A "
-				| D -> print_string "D "
-		done ; print_string "\n"
-	done ;;
-
-(* fonction qui va mettre a jour la generation donnee en argument avec les regles donne en argument *)
-let next_generation ((automat:automate),(gen:generation)) = let aux ((automat:automate),(gen:generation)) tab =  
-	for i=0 to (Array.length gen)-1 do 
-		for j=0 to (Array.length gen)-1 do 
-			if (aux_next_gen automat (voisinage_von_neumann gen i j)) then tab.(i).(j) <- A else tab.(i).(j) <- D
-		done
-	done ; (tab:generation) in  aux (automat,gen) (Array.make_matrix (Array.length gen) (Array.length gen) A);;
-
-(* fonction auxiliere a la fonction next_generation elle vaq verifier si le voisinage donne en argument correspond a une des regles*)
-let rec aux_next_gen (liste:automate) voisinage = match liste with 
-	| [] -> false
-	| a::q -> if a=voisinage then true else aux_next_gen q voisinage ;;
-
-
-(* fonction aui renvoie un voisinage de von neumann  pour une cellule *)
-let voisinage_von_neumann (gen:generation) i j = ((up gen i j),(right gen i j),(down gen i j),(left gen i j),(gen.(i).(j)));;
 
 (* fonction qui renvoie la case a droite de la case cible *)
 let right (gen:generation) i j = if ((Array.length gen)-1)=j then gen.(i).(0) else gen.(i).(j+1);;
@@ -73,9 +41,38 @@ let down (gen:generation) i j = if i=((Array.length gen)-1) then gen.(0).(j) els
 (* fonction qui renvoie la case en haut de la case cible *)
 let up (gen:generation) i j = if i=0 then gen.((Array.length gen)-1).(j) else gen.(i-1).(j);;
 
+(* fonction aui renvoie un voisinage de von neumann  pour une cellule *)
+let voisinage_von_neumann (gen:generation) i j = ((up gen i j),(right gen i j),(down gen i j),(left gen i j),(gen.(i).(j)));;
+
+(* fonction auxiliere a la fonction next_generation elle vaq verifier si le voisinage donne en argument correspond a une des regles*)
+let rec aux_next_gen (liste:automate) voisinage = match liste with 
+	| [] -> false
+	| a::q -> if a=voisinage then true else aux_next_gen q voisinage ;;
+
+(* fonction qui va mettre a jour la generation donnee en argument avec les regles donne en argument *)
+let next_generation ((automat:automate),(gen:generation)) = let aux ((automat:automate),(gen:generation)) tab =  
+	for i=0 to (Array.length gen)-1 do 
+		for j=0 to (Array.length gen)-1 do 
+			if (aux_next_gen automat (voisinage_von_neumann gen i j)) then tab.(i).(j) <- A else tab.(i).(j) <- D
+		done
+	done ; (tab:generation) in  aux (automat,gen) (Array.make_matrix (Array.length gen) (Array.length gen) A);;
+
+(* Fonction aui affiche une generation donnee en argument *)
+let show_generation (gen:generation) = 
+	for i=0 to ((Array.length gen)-1) do 
+		for j=0 to ((Array.length gen)-1) do
+			match (gen.(i).(j))with
+				| A -> print_string "A "
+				| D -> print_string "D "
+		done ; print_string "\n"
+	done ;;
 
 
 
+
+
+
+(*
 (* ********** Test des fonctions ********** *)
 let (gen:generation) = Array.make_matrix 3 3 A;;
 let rule = (A,A,A,A,A);;
@@ -92,4 +89,4 @@ show_generation gen2;;
 let gen3 = next_generation (automat,gen2) ;;
 show_generation gen3;;
 
-(********************************************)
+(********************************************)*)
