@@ -1,4 +1,4 @@
-#load "propositionnel.cma"
+(*#load "propositionnel.cma"*)
 open Propositionnel;;
 open Types;;
 
@@ -46,12 +46,31 @@ List.length (aux form []);;
 
 (* crée un fichier au format dimacs *)
 
-let creat_dimacs form out_chan = let out = open_out "entree.dimacs" in
- output_string out_chan ("p cnf "^(string_of_int (nombre_de_var form))^" "^(string_of_int (nombre_de_clause form))^"\n"^(form_to_dimacs form));
+let creat_dimacs form out_chan = 
+output_string out_chan ("p cnf "^(string_of_int (nombre_de_var form))^" "^(string_of_int (nombre_de_clause form))^"\n"^(form_to_dimacs form));
 close_out out_chan;;
 
 
 (* show stable *)
+
 let show_stable () = 
-let continue = true in 
-while continue do Sys.command "minisat entree.dimacs";;;
+let continue = ref true in 
+let resultat = ref 0 in 
+while (!continue && !resultat <> 3)
+do begin
+resultat := Sys.command "minisat entree.dimacs sortie";
+if !resultat = 10 then begin
+print_string "la formule est satisfaisable\n";
+print_string "voulez vous continuer a trouver des generations stables?\n";
+if read_line () = "non" then begin
+continue := false 
+end
+end;
+if !resultat = 20 then begin
+print_string "la formule n'est pas satisfaisable";
+print_newline() 
+end;
+end;
+done;;
+
+show_stable ();;
