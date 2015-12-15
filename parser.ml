@@ -27,7 +27,7 @@ let str_to_rule str :rule=
 	else failwith "";;
 
 (* renvoie une liste de regle *)
-let liste_to_regles l : automaton = 
+let liste_to_regles l : automate = 
 	let rec aux ls lr = match ls with
 	[] -> lr
 	|a::q -> (str_to_rule a)::(aux q lr)

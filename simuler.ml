@@ -1,3 +1,5 @@
+open Propositionnel;;
+open Types;;
 
 (* fonction qui renvoie la case a droite de la case cible *)
 let right (gen:generation) i j = if ((Array.length gen)-1)=j then gen.(i).(0) else gen.(i).(j+1);;

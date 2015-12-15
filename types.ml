@@ -4,7 +4,7 @@ type generation = (state array) array;;
 (*type vonNeu1 =(state*state*state*state*state);;*)
 (*type vonMoore = (state*state*state*state*state*state*state*state*state);;*)
 type rule = (state*state*state*state*state);; 
-type automaton = rule list;;
+type automate = rule list;;
 (* type pour les formules propositionnelles*)
 type formule = Vrai | Faux
               | Var of string

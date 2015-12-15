@@ -99,7 +99,7 @@ let fnc_partielle case regles taille =
 		| a::q->aux env q ((env_to_clause env a)::liste) in 
 	aux (get_environement_case case taille) regles [];;
 
-let sous_stables ((automaton:automaton),i) = 
+let sous_stables ((automaton:automate),i) = 
 	let rec aux regles cmp taille liste = 
 		if cmp = 1 then liste else aux regles (cmp-1) taille (fnc_partielle cmp regles taille)@liste in 
 	aux (les_bonnes_regles automaton) i i [] ;; 

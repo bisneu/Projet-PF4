@@ -1,8 +1,8 @@
 (*#load "propositionnel.cma"*)
-open Propositionnel;;
-open Types;;
-open Simuler;;
 open Parser;;
+open Propositionnel;;
+open Simuler;;
+open Types;;
 
 let fic = open_out "entree.dimacs";;
 
@@ -67,23 +67,27 @@ liste_f (aux ((String.length str)-1) []) [] "" ;;
 
 (* donne la generation obtenu avec la sortie de minisat sous forme de string *)
 (* pas de 0 dans la sortie  de minisat || prendre la taille de la generation *)
-let get_gen_stable str = 
+let get_gen_stable str :generation= 
 let i = ref 0 in
 let taille_liste = int_of_float(sqrt (float_of_int ((List.length (explode str))-1))) in
+let array = Array.make_matrix taille_liste taille_liste D in
 let rec aux l res = match l with
 |[]|"0"::[]  -> res
 |a::q ->i := !i+1; 
 if (int_of_string a)<0 
-then begin 
+then begin res.((!i-1)/taille_liste).((!i-1) mod taille_liste)<- D; aux q res end
+else begin res.((!i-1)/taille_liste).((!i-1) mod taille_liste)<- A; aux q res end
+in aux (explode str) array;;
+
+(* begin 
 if (!i mod taille_liste)=0 
-then aux q (res^"D\n") 
-else aux q (res^"D")
-end 
-else
-if (!i mod taille_liste)=0 
-then aux q (res^"A\n")
-else aux q (res^"A") 
-in aux (explode str) "";; 
+then *) (* aux q (res^"D\n")*) 
+(*else res.(!i/taille_liste).(!i mod taille_liste)<- D;aux q res (*aux q (res^"D")*)
+end*) 
+(*if (!i mod taille_liste)=0 
+then*)  (*aux q (res^"A\n")*)
+(*else res.(!i/taille_liste).(!i mod taille_liste)<- A; aux q res (*aux q (res^"A") *)*)
+ 
 
 
 (* recupere un string du fichier de nom "str" *)
@@ -105,7 +109,7 @@ do begin
 resultat := Sys.command "minisat entree.dimacs sortie";
 if !resultat = 10 then begin
 print_string "la formule est satisfaisable\n";
-show_generation (strlist_to_statearray (get_list_from_file (get_gen_stable (get_string_in "sortie"))));
+show_generation (get_gen_stable (get_string_in "sortie"));
 print_string "voulez vous continuer a trouver des generations stables?\n";
 if read_line () = "non" then begin
 continue := false 
