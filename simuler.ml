@@ -1,4 +1,3 @@
-open Propositionnel;;
 open Types;;
 
 (* fonction qui renvoie la case a droite de la case cible *)
