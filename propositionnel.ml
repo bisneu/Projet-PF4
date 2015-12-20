@@ -42,7 +42,8 @@ let rec genere env liste =
 				else if z=D then genere (x,y,A,D,A) ((x,y,A,D,A)::liste) 
 				else if y=D  then genere (x,A,D,D,A) ((x,A,D,D,A)::liste)	
 				else if x=D then genere (A,D,D,D,A) ((A,D,D,D,A)::liste)
-				else genere (A,A,A,A,A) ((A,A,A,A,A)::liste);;
+				else genere (A,A,A,A,A) ((A,A,A,A,A)::liste)
+		| _-> failwith "impossible" ;;
 
 
 (*fonction qui supprime un element dans une liste sans doublons *)
@@ -74,9 +75,15 @@ let get_ligne taille c = if c mod taille = 0 then c/taille else (c/taille)+1 ;;
 let les_bonnes_regles automaton = (les_bonnes_regles_A (genere (D,D,D,D,A) ((D,D,D,D,A)::[])) automaton )@(les_bonnes_regles_D automaton);;
 			 
 (* fonction qui envoie le int qui correspond à la case du dessu *)
-let get_up_number case taille = if (case-taille)<0 then (taille*taille)+(case-taille) else (case-taille) ;; 
+let get_up_number case taille = if (case-taille)<0 then (taille*taille)+(case-taille) 
+				else if case = taille then (case-taille)+1
+				else (case-taille) ;; 
 (* fonction qui envoi le int qui correspond à la case du bas *)
-let get_down_number case taille = if (case+taille)>(taille*taille) then (case+taille) mod taille else (case+taille);;
+let get_down_number case taille = if (case+taille)>(taille*taille) 
+				  then if case = (taille*taille) 
+					then ((case+taille) mod taille)+1 
+					else (case+taille) mod taille  
+				  else (case+taille);;
 (* fonction qui envoie le int qui correspond à la case de gauche *)
 let get_left_number case taille ligne = if (case-1)<=0 then (ligne*taille) else (case-1);;
 (* fonction qui envoie le int qui correspond à la case de droite *)
@@ -86,7 +93,7 @@ let get_right_number case taille ligne = if (get_ligne taille (case+1)) = ligne 
 let get_environement_case case taille = 
 (string_of_int (get_up_number case taille),string_of_int (get_left_number case taille (get_ligne taille case)),string_of_int (get_down_number case taille),string_of_int (get_right_number case taille (get_ligne taille case)),string_of_int case);;
 
-(* fonction qui renvoie une variable ou bien son nié  *)
+(* fonction qui renvoie une variable ou bien son nié *)
 let neg_or_pos case valeur = if valeur=D then Var case else Neg(Var case);;
 
 (* fonction qui renvoie un clause pour un environement donné *)
@@ -101,18 +108,19 @@ let fnc_partielle case regles taille =
 
 let sous_stables ((automaton:automate),i) = 
 	let rec aux regles cmp taille liste = 
-		if cmp = 1 then liste else aux regles (cmp-1) taille (fnc_partielle cmp regles taille)@liste in 
-	aux (les_bonnes_regles automaton) i i [] ;; 
+		if cmp = 0 then liste else aux regles (cmp-1) taille (fnc_partielle cmp regles taille)@liste in 
+	aux (les_bonnes_regles automaton) (i*i) i [] ;; 
 
 let et_formule a b = Et(a,b);;
 
-let stables q = match sous_stables q with 
-	| [] -> Faux 
-	| a::q -> List.fold_left et_formule a q;;
+let stables q = sous_stables q ;;
+(*
+let aut = [(A,A,A,A,A);(A,A,A,A,D);(A,A,A,D,A);(A,A,A,D,D)];;
+let rec compteur liste cmp = match liste with  
+	| [] -> cmp
+	| a::q -> compteur q cmp+1 ;;
 
-let aut = [(D, A, D, A, D); (D, A, D, D, A); (D, A, A, A, D); (D, A, A, D, A);
-      (D, D, D, A, A); (D, D, D, D, D); (D, D, A, A, A); (D, D, A, D, D);
-      (A, A, D, A, D); (A, A, D, D, A); (A, A, A, A, A); (A, A, A, D, A);
-      (A, D, D, A, A); (A, D, D, D, D)];;
-
-string_of_formule (stables (aut,5));;
+let clause1 = env_to_clause (get_environement_case 1 7) (A,A,A,A,D) ;; 
+let clause2 = env_to_clause (get_environement_case 1 7) (A,A,A,A,A) ;;
+let liste = [clause1;clause2];; 
+List.fold_left (fun x y -> Et(x,y)) clause1 liste;;*)

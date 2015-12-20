@@ -1,21 +1,28 @@
 open Types
+open Parser 
 open Propositionnel
 open Simuler
 
- let fic = open_out "entree.dimacs";;
-let fnc = Et(Var("1"),Ou(Neg(Var("2")),Var("3")));;
-let str f = string_of_formule f;; 
 (* transforme une fomule en chaine de charactere dans le format dimacs *)
 
-let rec form_to_dimacs form = match form with
+(* let rec form_to_dimacs form = match form with
 	|Vrai -> failwith "presence d'une valuation vrai"
 	|Faux -> failwith "presence d'une valuation fause"
 	|Neg(f) -> "-"^(form_to_dimacs f)
 	|Var(v) -> v
-	|Et(f,g) -> (form_to_dimacs f)^" 0 \n" ^(form_to_dimacs g)^" 0\n" 
-	|Ou(f,g) -> (form_to_dimacs f)^" "^(form_to_dimacs g);;
+	|Et(f,g) -> (form_to_dimacs f)^" 0\n" ^(form_to_dimacs g)^" 0\n" (*voir sa de plus prés*) 
+	|Ou(f,g) -> (form_to_dimacs f)^" "^(form_to_dimacs g);; *)
 
-
+let rec form_to_dimacs liste = 
+	let rec aux p = match p with 
+		| Var(v) -> v 
+		| Neg(Var(v)) -> "-"^v
+		| Ou(f,g) -> (aux f)^" "^(aux g) 
+		| _-> "" in
+		match liste with 
+			| [] -> ""
+			| a::q -> (aux a)^" 0\n"^(form_to_dimacs q);; 
+	
 
 (* calcule le nombre de clause dijonctive d'une formule *) 
 
@@ -26,8 +33,13 @@ let  nombre_de_clause form =
 		|Neg(f)-> aux f
 		|Ou(f,g)-> (aux f)+(aux g)
 		|Et(f,g)-> (aux f)+(aux g)+1 in
-(aux form)+1;;
+	(aux form)+1;;
 
+let rec nombre_de_connard liste cmp = match liste with
+	| [] -> cmp 
+	| a::q -> nombre_de_connard q (cmp+1) ;;
+ 
+	
 
 (* calcule le nombre de variable propositionnel dans une formule *)
 
@@ -40,12 +52,13 @@ let nombre_de_var form =
 	|Neg(f) -> aux f l in
 	List.length (aux form []);;
 
+let et_form form = match form with 
+	| [] -> Faux
+	| a::q -> List.fold_left (fun x y -> Et(x,y)) a q ;;
 
 (* crée un fichier au format dimacs *)
-
-let creat_dimacs form out_chan = 
-output_string out_chan ("p cnf "^(string_of_int (nombre_de_var form))^" "^(string_of_int (nombre_de_clause form))^"\n"^(form_to_dimacs form));
-close_out out_chan;;
+let creat_dimacs form out_chan = let str = (form_to_dimacs form) in  
+output_string out_chan (("p cnf "^(string_of_int (nombre_de_var (et_form form))))^" "^(string_of_int (nombre_de_connard form 0))^"\n"^(str)); close_out out_chan;;
 
 
 (* transforme un string en liste de char *)
@@ -53,10 +66,10 @@ close_out out_chan;;
 let explode str = 
 	let rec aux i l = 
 		if i<0 then l else aux (i-1) (str.[i]::l) in
-	let rec liste_f l l1 = match l with
-		[] -> l1
-		| a::q-> if a = ' ' then (liste_f q l1) else (liste_f q (((String.make 1 a))::l1)) in (* j ai enlever la concatenation de lsite *) 
-	liste_f (aux ((String.length str)-1) []) [];;
+	let rec liste_f l l1 s = match l with
+		[] -> l1@[s]
+		|a::q-> if a = ' ' then (liste_f q (l1@[s]) "") else (liste_f q l1 ((s^(String.make 1 a)))) in  
+	liste_f (aux ((String.length str)-1) []) [] "";;
 
 
 
@@ -97,24 +110,41 @@ let get_string_in str =
 		with End_of_file -> res
 		in get_line fic "" 0;;
 
-(* show stable *)
 
+
+let transforme liste  = let rec aux liste liste2 =
+	match liste with 
+		| [] -> liste2
+		| [a] -> liste2
+		| a::q -> if (int_of_string a)<0 then aux q (Var (String.sub a 1 ((String.length a)-1))::liste2) else  aux q (Neg((Var a))::liste2)
+	in aux liste [];;
+
+let transforme_suite liste = match liste with 
+	| [] -> failwith "erreur"
+	| a::q -> List.fold_left (fun x y -> Ou(x,y)) a q ;;
+
+let fonction_stable (x,y,z) = stables (y,x) ;;
+
+(* show stable *)
 let show_stable () =
-	(*explode (get_string_in str)*) 
+	let mes_clauses = ref (fonction_stable (parse (open_in "monzizi.txt"))) in
 	let continue = ref true in 
 	let resultat = ref 0 in 
 	while (!continue && !resultat <> 3)
 		do begin
+		creat_dimacs !mes_clauses (open_out "entree.dimacs");
 		resultat := Sys.command "minisat entree.dimacs sortie";
 		if !resultat = 10 then begin
 			print_string "la formule est satisfaisable\n";
 			show_generation (get_gen_stable (get_string_in "sortie"));
+			mes_clauses:=(transforme_suite (transforme (explode (get_string_in "sortie"))))::(!mes_clauses);
 			print_string "voulez vous continuer a trouver des generations stables?\n";
 			if read_line () = "non" then begin
 				continue := false 
-			end
+			end ;
 		end;
 		if !resultat = 20 then begin
+			resultat := 3;
 			print_string "la formule n'est pas satisfaisable";
 			print_newline() 
 		end;
@@ -122,8 +152,6 @@ let show_stable () =
 done ;;
 
 
-(*
-let rec affiche_liste l = match l with 
-	| [] -> print_string "TEUB"
-	| a::q -> print_string a ; affiche_liste q ;;
-*)
+
+
+
