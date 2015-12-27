@@ -67,27 +67,3 @@ let show_generation (gen:generation) =
 				| D -> print_string "D "
 		done ; print_string "\n"
 	done ;;
-
-
-
-
-
-
-(*
-(* ********** Test des fonctions ********** *)
-let (gen:generation) = Array.make_matrix 3 3 A;;
-let rule = (A,A,A,A,A);;
-let rule2 = (A,A,A,A,D);;
-let rule3 = (A,A,A,D,A);;
-let rule4 = (A,A,A,D,D);;
-let automat = [rule;rule2;rule3;rule4];;
-gen.(0).(0) <- D ;;
-gen.(1).(1) <- D ;;
-gen.(2).(2) <- D ;;
-show_generation gen;;
-let gen2 = next_generation (automat,gen) ;;
-show_generation gen2;;
-let gen3 = next_generation (automat,gen2) ;;
-show_generation gen3;;
-
-(********************************************)*)

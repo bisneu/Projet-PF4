@@ -1,12 +1,19 @@
 open Types;;
 
+exception FileError ;;
+exception RulesError ;;
+exception EmptyError ;;
+exception SyntaxeError ;;
+exception StateError ;;
+exception GenerationError ;; 
+
 (* identifie un caractere donnée à un état *)
 let char_to_state c = match c with
 	|'a' -> (A:state)
 	|'A' -> (A:state)
 	|'d' -> (D:state)
 	|'D' -> (D:state)
-	|_ -> failwith "ni a ni d";;
+	|_ -> raise StateError;;
 
 (* analyse une chaine de caractere correspondant a une regle et stock les états dans une liste*)
 let explode_to_state str = 
@@ -36,13 +43,13 @@ let liste_to_regles l : automate =
 (* fonction qui stock les regles donnée dans le fichier dans une liste *)
 let  getregles l = 
 	let rec aux l1 l2 = match l1 with
-	[] -> failwith "fichier incomplet ou incompatible"
+	[] -> raise SyntaxeError 
 	|a::q -> if a <> "GenerationZero" then aux q (a::l2) else l2
 	in aux l [];;  
 
 (* fonction qui permet de generer l'automate *)
 let rec getautomaton l = match l with
-	[] -> failwith "pas de regles"
+	[] -> raise RulesError
 	|a::q ->  begin match a with
 	| "regles"-> liste_to_regles (getregles q) 
 	|_ -> getautomaton q end;;
@@ -51,13 +58,13 @@ let rec getautomaton l = match l with
 let strlist_to_statearray l :generation= 
 	let rec generation l1 l2 = match l1 with 
 	[] -> l2
-	|""::[]->failwith "un charactere illegal dans le fichier"
+	|""::[]-> raise SyntaxeError
 	|a::q -> generation q (l2@[(Array.of_list (explode_to_state a))])
 	in (Array.of_list (generation l []));;
 
 (* permet de generer la generation *)
 let rec getgeneration l = match l with 
-	[] -> failwith "pas de generation"
+	[] -> raise GenerationError 
 	|a::q ->  if a = "GenerationZero" then strlist_to_statearray q else getgeneration q;;
  
 (* permet d'avoir une liste de chaine de caracteres correspondant aux ligne écrite dans le fichier *)
@@ -73,8 +80,14 @@ let get_list_from_file in_ch =
 (* fonction demandé dans le sujet =D !! *)
 let parse in_ch =
 	let aux l = match l with  
-	[] -> failwith "fichier vide"
+	[] -> raise EmptyError  
 	|a :: q -> try ((int_of_string a),(getautomaton q),(getgeneration q)) with 
-	|Failure "fail" -> (0, ((A,A,A,A,A)::[]),Array.make_matrix 1 1 A)
-	in  aux (get_list_from_file in_ch);;
+	|Failure "La saisie est mauvaise" -> (0, ((A,A,A,A,A)::[]),Array.make_matrix 1 1 A)
+	in  try aux (get_list_from_file in_ch)
+	    with | FileError -> print_string "Il y a un problème de fichier veuillez verifier la syntaxe \n" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A ) 
+	     	 | RulesError -> print_string "Problème dans les règles veuillez verifier la syntaxe des règles" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A ) 
+	     	 | EmptyError -> print_string "Le fichier est vide \n" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A ) 
+	     	 | SyntaxeError -> print_string "Verifier la syntaxe du fichier\n" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A ) 
+	     	 | StateError -> print_string "Il y a un probleme dans les states utilisez seulement A ou D\n" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A ) 
+	     	 | GenerationError -> print_string "Problème dans la génération \n" ; (0,((A,A,A,A,A)::[]),Array.make_matrix 1 1 A );; 
 

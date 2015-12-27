@@ -127,7 +127,7 @@ let fonction_stable (x,y,z) = stables (y,x) ;;
 
 (* show stable *)
 let show_stable () =
-	let mes_clauses = ref (fonction_stable (parse (open_in "monzizi.txt"))) in
+	let mes_clauses = ref (fonction_stable (parse (open_in Sys.argv.(1)))) in
 	let continue = ref true in 
 	let resultat = ref 0 in 
 	while (!continue && !resultat <> 3)
@@ -145,7 +145,7 @@ let show_stable () =
 		end;
 		if !resultat = 20 then begin
 			resultat := 3;
-			print_string "la formule n'est pas satisfaisable";
+			print_string "la formule n'est pas (ou plus)  satisfaisable";
 			print_newline() 
 		end;
 	end;

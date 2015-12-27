@@ -114,13 +114,3 @@ let sous_stables ((automaton:automate),i) =
 let et_formule a b = Et(a,b);;
 
 let stables q = sous_stables q ;;
-(*
-let aut = [(A,A,A,A,A);(A,A,A,A,D);(A,A,A,D,A);(A,A,A,D,D)];;
-let rec compteur liste cmp = match liste with  
-	| [] -> cmp
-	| a::q -> compteur q cmp+1 ;;
-
-let clause1 = env_to_clause (get_environement_case 1 7) (A,A,A,A,D) ;; 
-let clause2 = env_to_clause (get_environement_case 1 7) (A,A,A,A,A) ;;
-let liste = [clause1;clause2];; 
-List.fold_left (fun x y -> Et(x,y)) clause1 liste;;*)

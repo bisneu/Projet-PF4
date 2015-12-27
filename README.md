@@ -1,6 +1,3 @@
-# Teub
-
-git push -u origin master 
-git clone https://github.com/bisneu/Teub.git
-git checkout monfichier.txt
-git pull origin master 
+- pour compiler le programme lancé la commande make 
+- pour exécuter le programme lancé la commande ./main "nom_dun_fichier" ( vous pouvez utiliser le fichier test.txt qui est l'automate donnée 
+pour exemple sur le sujet )
