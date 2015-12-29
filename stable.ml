@@ -2,7 +2,7 @@ open Types
 open Parser 
 open Propositionnel
 open Simuler
-
+open Graph
 (* transforme une fomule en chaine de charactere dans le format dimacs *)
 
 (* let rec form_to_dimacs form = match form with
@@ -136,7 +136,7 @@ let show_stable () =
 		resultat := Sys.command "minisat entree.dimacs sortie";
 		if !resultat = 10 then begin
 			print_string "la formule est satisfaisable\n";
-			show_generation (get_gen_stable (get_string_in "sortie"));
+			init (get_gen_stable (get_string_in "sortie"));
 			mes_clauses:=(transforme_suite (transforme (explode (get_string_in "sortie"))))::(!mes_clauses);
 			print_string "voulez vous continuer a trouver des generations stables?\n";
 			if read_line () = "non" then begin
